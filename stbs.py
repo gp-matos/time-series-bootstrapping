@@ -296,8 +296,8 @@ class MBB(Scene):
 
         dot = Dot(color=ORANGE).move_to(small_series[0].c2p(I_val_obj.get_value(), -3.5))
         dot.add_updater(lambda m: m.move_to(small_series[0].c2p(I_val_obj.get_value(), -3.5)))
-
-        self.play(Create(dot), Create(dot.copy().next_to(I_val_obj, RIGHT, buff=0.2)))
+        dot_legend = Dot(color=ORANGE).next_to(I_val_obj, RIGHT, buff=0.6)
+        self.play(Create(dot), Create(dot_legend))
 
 
         self.play(Create(bootstrap_axes))
@@ -313,11 +313,11 @@ class MBB(Scene):
             self.play(UpdateFromFunc(I_val_obj, randomize_I))
             I = I_val_obj.get_value()
             self.wait(1)
-
+            dot_label = Tex(str(I), font_size = 30).next_to(dot, DOWN, buff=0.2)
             #creates the block label
-            block_label = Tex(f"$B_{{{I},10}}$").next_to(bootstrap_axes, RIGHT, buff=2.5)
+            block_label = Tex(f"$B_{{{I}}}$").next_to(bootstrap_axes, RIGHT, buff=2.5)
             block_label_mutated = Tex(f"$B_{{{i+1}}}^*$").next_to(bootstrap_axes, RIGHT, buff=2.5)
-            self.play(Create(block_label))
+            self.play(Create(block_label), Create(dot_label))
 
             #logic for wrapping around the data
             if I + self.b > len(self.data):
@@ -331,8 +331,10 @@ class MBB(Scene):
                 #if you wrap around, move the part that wrapped back up to the front
                 fin_block = block_plot_origin_end #try making this a copy instead
                 #now making the line for the length of the block
-                line = Line(dot, small_series[0].c2p(len(self.data), -3.5))
-                self.play(Create(block_plot_origin_end["line_graph"]), *[Create(dot) for dot in block_plot_origin_end['vertex_dots']], Create(line))
+                arrow = Arrow(dot, small_series[0].c2p(len(self.data), -3.5), color=ORANGE, buff=0)
+                arrow_label = Tex(str(len(self.data - I)), font_size=30).next_to(arrow, RIGHT, buff=0.15)
+                block_label_with_length = Tex(f"$B_{{{I},{len(self.data)-I}}}$").next_to(bootstrap_axes, RIGHT, buff=2.5)
+                self.play(Create(block_plot_origin_end["line_graph"]), *[Create(dot) for dot in block_plot_origin_end['vertex_dots']], Create(arrow), Create(arrow_label), ReplacementTransform(block_label, block_label_with_length))
             else:
                 block_plot_origin_end = small_series[0].plot_line_graph(
                     x_values=range(I, I+self.b),
@@ -342,8 +344,10 @@ class MBB(Scene):
                 )
 
                 #now making the line for the length of the block
-                line = Line(dot, small_series[0].c2p(I+self.b, -3.5))
-                self.play(Create(block_plot_origin_end["line_graph"]), *[Create(dot) for dot in block_plot_origin_end['vertex_dots']], Create(line))
+                arrow = Arrow(dot, small_series[0].c2p(I+self.b, -3.5), color=ORANGE, buff=0)
+                arrow_label = Tex(str(self.b), font_size=30).next_to(arrow, RIGHT, buff=0.15)
+                block_label_with_length = Tex(f"$B_{{{I},{self.b}}}$").next_to(bootstrap_axes, RIGHT, buff=2.5)
+                self.play(Create(block_plot_origin_end["line_graph"]), *[Create(dot) for dot in block_plot_origin_end['vertex_dots']], Create(arrow), Create(arrow_label), ReplacementTransform(block_label, block_label_with_length))
                 fin_block = block_plot_origin_end #try making this a copy instead
 
             #get the actual data for the bootstrap block and add to the blocks array    
@@ -363,9 +367,9 @@ class MBB(Scene):
             block_plots.add(block_plot)
 
             self.wait()
-            self.play(Transform(block_label, block_label_mutated))
-            self.play(FadeOut(line), ReplacementTransform(fin_block.copy(), block_plot))
-            self.play(FadeOut(fin_block), FadeOut(block_label))
+            self.play(ReplacementTransform(block_label_with_length, block_label_mutated), FadeOut(arrow), FadeOut(arrow_label), FadeOut(dot_label))
+            self.play(ReplacementTransform(fin_block.copy(), block_plot))
+            self.play(FadeOut(fin_block), FadeOut(block_label_mutated))
             bs_index += len(block_sample)
             i += 1
 

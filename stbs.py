@@ -313,7 +313,7 @@ class MBB(Scene):
             self.play(UpdateFromFunc(I_val_obj, randomize_I))
             I = I_val_obj.get_value()
             self.wait(1)
-            # line = Line(dot, small_series[0].c2p(I_val_obj, -3.5)).move_to(small_series[0].c2p(I_val_obj, -3.5))
+
             #creates the block label
             block_label = Tex(f"$B_{{{I},10}}$").next_to(bootstrap_axes, RIGHT, buff=2.5)
             block_label_mutated = Tex(f"$B_{{{i+1}}}^*$").next_to(bootstrap_axes, RIGHT, buff=2.5)
@@ -330,7 +330,9 @@ class MBB(Scene):
                 )
                 #if you wrap around, move the part that wrapped back up to the front
                 fin_block = block_plot_origin_end #try making this a copy instead
-                self.play(Create(block_plot_origin_end["line_graph"]), *[Create(dot) for dot in block_plot_origin_end['vertex_dots']])
+                #now making the line for the length of the block
+                line = Line(dot, small_series[0].c2p(len(self.data), -3.5))
+                self.play(Create(block_plot_origin_end["line_graph"]), *[Create(dot) for dot in block_plot_origin_end['vertex_dots']], Create(line))
             else:
                 block_plot_origin_end = small_series[0].plot_line_graph(
                     x_values=range(I, I+self.b),
@@ -338,7 +340,10 @@ class MBB(Scene):
                     line_color=RED,
                     vertex_dot_radius=0.05,
                 )
-                self.play(Create(block_plot_origin_end["line_graph"]), *[Create(dot) for dot in block_plot_origin_end['vertex_dots']])
+
+                #now making the line for the length of the block
+                line = Line(dot, small_series[0].c2p(I+self.b, -3.5))
+                self.play(Create(block_plot_origin_end["line_graph"]), *[Create(dot) for dot in block_plot_origin_end['vertex_dots']], Create(line))
                 fin_block = block_plot_origin_end #try making this a copy instead
 
             #get the actual data for the bootstrap block and add to the blocks array    
@@ -359,7 +364,7 @@ class MBB(Scene):
 
             self.wait()
             self.play(Transform(block_label, block_label_mutated))
-            self.play(ReplacementTransform(fin_block.copy(), block_plot))
+            self.play(FadeOut(line), ReplacementTransform(fin_block.copy(), block_plot))
             self.play(FadeOut(fin_block), FadeOut(block_label))
             bs_index += len(block_sample)
             i += 1

@@ -9,7 +9,7 @@ class STBS(Scene):
         self.data = np.random.randn(100)
         self.t = range(len(self.data))
         self.LENGTH = len(self.data)
-        self.PROB = .05
+        self.PROB = .06
 
         #generates the first axes at the beginning
         axes = Axes(
